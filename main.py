@@ -1,12 +1,15 @@
 # pip install opencv-python
 import cv2
+import glob
+import re
 import time
 from emailing import send_email
 
-video = cv2.VideoCapture(4)  # 0 for default camera, 4 for external camera
+video = cv2.VideoCapture(0)  # 0 for default camera, 4 for external camera
 time.sleep(1)
 initialized = False
 inside = False
+img_counter = 0
 while True:
     # Catch frames one by one and compare with the first frame
     check, frame = video.read()
@@ -32,8 +35,12 @@ while True:
 
     if rectangles is not None and rectangles.any():
         inside = True
+        cv2.imwrite(f"images/intruder_{str(img_counter).zfill(8)}.png", frame)
+        img_counter += 1
     elif inside:
-        send_email()
+        all_images = glob.glob("images/*.png")
+        all_images.sort()
+        send_email(all_images[int(len(all_images) / 2)])
         inside = False
 
     cv2.imshow("Capturing", frame)
