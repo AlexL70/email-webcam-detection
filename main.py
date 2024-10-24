@@ -1,9 +1,16 @@
 # pip install opencv-python
 import cv2
 import glob
-import re
+import os
 import time
 from emailing import send_email
+
+
+def clean_images_folder():
+    images = glob.glob("images/*.png")
+    for image in images:
+        os.remove(image)
+
 
 video = cv2.VideoCapture(0)  # 0 for default camera, 4 for external camera
 time.sleep(1)
@@ -41,6 +48,7 @@ while True:
         all_images = glob.glob("images/*.png")
         all_images.sort()
         send_email(all_images[int(len(all_images) / 2)])
+        clean_images_folder()
         inside = False
 
     cv2.imshow("Capturing", frame)
