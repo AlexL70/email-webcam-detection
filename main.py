@@ -44,7 +44,6 @@ while True:
         inside = False
 
     cv2.imshow("Capturing", frame)
-    # cv2.imshow("Capturing", dil_frame)
     key = cv2.waitKey(1)
     if key == ord('q'):
         break
