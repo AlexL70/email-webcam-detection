@@ -1,10 +1,12 @@
 # pip install opencv-python
 import cv2
 import time
+from emailing import send_email
 
 video = cv2.VideoCapture(4)  # 0 for default camera, 4 for external camera
 time.sleep(1)
 initialized = False
+inside = False
 while True:
     # Catch frames one by one and compare with the first frame
     check, frame = video.read()
@@ -20,11 +22,20 @@ while True:
     dil_frame = cv2.dilate(thresh_frame, None, iterations=5)
     contours, check = cv2.findContours(
         dil_frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    rectangles = None
     for contour in contours:
         if cv2.contourArea(contour) < 5000:
             continue
         x, y, w, h = cv2.boundingRect(contour)
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (127, 255, 127), 3)
+        rectangles = cv2.rectangle(
+            frame, (x, y), (x+w, y+h), (127, 255, 127), 3)
+
+    if rectangles is not None and rectangles.any():
+        inside = True
+    elif inside:
+        send_email()
+        inside = False
+
     cv2.imshow("Capturing", frame)
     # cv2.imshow("Capturing", dil_frame)
     key = cv2.waitKey(1)
