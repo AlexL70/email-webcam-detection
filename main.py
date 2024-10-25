@@ -4,12 +4,20 @@ import glob
 import os
 import time
 from emailing import send_email
+from threading import Thread
 
 
 def clean_images_folder():
     images = glob.glob("images/*.png")
     for image in images:
         os.remove(image)
+
+
+def send_and_clean(image_path: str):
+    send_email(image_path)
+    clean_thread = Thread(target=clean_images_folder)
+    clean_thread.daemon = True
+    clean_thread.start()
 
 
 video = cv2.VideoCapture(0)  # 0 for default camera, 4 for external camera
@@ -47,9 +55,11 @@ while True:
     elif inside:
         all_images = glob.glob("images/*.png")
         all_images.sort()
-        send_email(all_images[int(len(all_images) / 2)])
-        clean_images_folder()
+        send_and_clean_thread = Thread(target=send_and_clean, args=(
+            all_images[int(len(all_images) / 2)],))  # Comma is essential; it indicates that the argument is a tuple
+        send_and_clean_thread.daemon = True
         inside = False
+        send_and_clean_thread.start()
 
     cv2.imshow("Capturing", frame)
     key = cv2.waitKey(1)
@@ -57,6 +67,3 @@ while True:
         break
 
 video.release()
-
-# print(check1)
-# print(frame1)
